@@ -67,7 +67,11 @@ def get_users_tweets(tweet):
     fixed_tweet_string = regex.sub('', tweet_string)
     return fixed_tweet_string
 
-def run():
+"""
+Start retrieving random sample of live tweets, and whenever a tweet is found, calls on_status
+http://docs.tweepy.org/en/v3.5.0/streaming_how_to.html
+"""
+def stream_tweets():
     myStreamListener = MyStreamListener()
     myStream = tweepy.Stream(api.auth, listener=myStreamListener)
 
@@ -80,4 +84,4 @@ def run():
     # myStream.filter(track=['pepsi'], async=True)
 
 if __name__ == '__main__':
-    run()
+    stream_tweets()
