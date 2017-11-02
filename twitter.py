@@ -28,11 +28,11 @@ class MyStreamListener(tweepy.StreamListener):
     """
     def on_status(self, tweet):
         if tweet_contains_video(tweet):
-            print("ID: " + tweet.author.screen_name)
-            print("TWEET: "+ tweet.text)
-            print("VIDEO_URL: " + tweet.extended_entities['media'][0]['video_info']['variants'][0]['url'])
-            print(get_users_tweets(tweet))
-
+            print("NAME: " + tweet.author.screen_name)
+            tweet_string, video_links = get_users_tweets_and_links(tweet)
+            print("TWEETS: " + tweet_string)
+            print("VIDEO_URLS: " + str(video_links))
+            #  TODO: For loop through the video_links and add to database
     def on_error(self, status_code):
         if status_code == 420:
             #returning False in on_status disconnects the stream
@@ -55,17 +55,27 @@ def tweet_contains_video(tweet):
 Gets the 200 most recent tweets from the user of the input tweet
 
 @param tweet: tweet object of the person of interest
-@return: string of 200 tweets of the user joined together
+@return: tuple of (tweet_string,video_links),
+where tweet_string is the 200 tweets put together as one string
+and video_links is a List of strings of video URLS found within the 200 tweets
 """
-def get_users_tweets(tweet):
-    timeline_tweets = api.user_timeline(screen_name=tweet.author.screen_name,count=200)
-    timeline_tweets = [timeline_tweet.text for timeline_tweet in timeline_tweets]
+def get_users_tweets_and_links(tweet):
+    user_tweets = api.user_timeline(screen_name=tweet.author.screen_name,count=200)
+    video_links = []
+    for user_tweet in user_tweets:
+        if tweet_contains_video(user_tweet):
+            video_links.append(user_tweet.extended_entities['media'][0]['video_info']['variants'][0]['url'])
+    user_tweets = [timeline_tweet.text for timeline_tweet in user_tweets]
     # add original tweet with the video + 200 of user's most recent tweet
     # into one string
-    tweet_string = tweet.text + " " + " ".join(timeline_tweets)
+    tweet_string = tweet.text + " " + " ".join(user_tweets)
     regex = re.compile('[^a-zA-Z @/.,#"]')
     fixed_tweet_string = regex.sub('', tweet_string)
-    return fixed_tweet_string
+    return (fixed_tweet_string,video_links)
+
+"""
+Returns List of video URLs from a list of the user's tweets
+"""
 
 """
 Start retrieving random sample of live tweets, and whenever a tweet is found, calls on_status
