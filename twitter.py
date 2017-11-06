@@ -73,6 +73,16 @@ def get_users_tweets_and_links(tweet):
     fixed_tweet_string = regex.sub('', tweet_string)
     return (fixed_tweet_string,video_links)
 
+
+def get_users_tweets_by_screen_name(screen_name):
+    user_tweets = api.user_timeline(screen_name=screen_name,count=200)
+    user_tweets = [timeline_tweet.text for timeline_tweet in user_tweets]
+    video_links = []
+    tweet_string = " ".join(user_tweets)
+    regex = re.compile('[^a-zA-Z @/.,#"]')
+    fixed_tweet_string = regex.sub('', tweet_string)
+    return fixed_tweet_string
+
 """
 Returns List of video URLs from a list of the user's tweets
 """
